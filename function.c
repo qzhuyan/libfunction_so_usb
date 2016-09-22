@@ -9,7 +9,8 @@
 #include    <errno.h>
 #include    "function.h"
 #include    "define.h"
-#define DATALEN 0x100
+//#define DATALEN 0x100
+#define DATALEN 256
 #define FALSE -1
 #define TRUE 0
 
@@ -51,7 +52,7 @@ int openCom(void)
 		return FALSE;
 	}
 
-	devs = libusb_open_device_with_vid_pid(NULL, PID, VID);
+	devs = libusb_open_device_with_vid_pid(NULL, VID, PID);
 	if( devs==NULL )
 	{
 		fprintf(stderr, "libusb open failed!\n");
@@ -121,8 +122,8 @@ void writeBuffers(unsigned char *data, int length)
 void clearBuffer(void)
 {
 	int i;
-	Data[0] = 0x01;
-	for (i=1;i<8;i++)
+	Data[0] = 0x00;
+	for (i=1;i<255;i++)
 		Data[i] = 0x00;
 	p = 0;
 }
@@ -132,13 +133,15 @@ int writeCom(unsigned char *data, int length)
 	int receive;
 	data[6] = length;
 
+
 	receive = libusb_control_transfer(devs,
 	                                  LIBUSB_RECIPIENT_INTERFACE|LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_ENDPOINT_OUT,
 	                                  LIBUSB_REQUEST_SET_CONFIGURATION,
 	                                  0x301,
 	                                  0,
 	                                  data,
-	                                  length+8,
+	                                  //length+8,
+                                    256,
 	                                  500);
 
 	if (receive == LIBUSB_ERROR_TIMEOUT)
@@ -198,37 +201,37 @@ int sendData(void)
 {
 	int length;
 	int i;
-	
+
 	printf ("Send data:");
 	for (i=0;i<p;i++)
 		fprintf(stderr, "%02x ",Buffer[i]);
 	fprintf(stderr, "\n");
-	
+
 	if(openCom() == FALSE)
 	{
 		return FALSE;
 	}
 	length = writeCom(Data, p);
 	fprintf(stderr, "length send: %02x\n", length);
-	
+
 	if(length != p)
 		return 0x05;
-		
+
 	length=readCom(Data,248);
-	
-	
+
+
 	fprintf(stderr, "length read: %02x\n", length);
 	/*
 	if(length != receive_len)
 		return 0x05;*/
-		
+
 	p = length;
-	
+
 	fprintf(stderr, "Receive data:");
 	for (i=0;i<length;i++)
 		fprintf(stderr, "%02x ",Buffer[i]);
 	fprintf(stderr, "\n");
-	
+
 	if(p<6 || (Buffer[0]!=0x02 && Buffer[0]!=STX) || (Buffer[p-1]!=0x03 && Buffer[p-1]!=ETX) || Buffer[2]+5!=p)
 		return 0x05;
 	if (checkData(Buffer,1,p-3) != Buffer[p-2])
@@ -253,7 +256,7 @@ int sendCommand(int command,  unsigned char *sDATA, int sDLen,unsigned char *rDA
 	writeBuffer(ETX);
 
 	result = sendData();
-	
+
 	if(result != 0)
 		return result;
 	copyData(Buffer,4,rDATA,0,Buffer[2]-1);
@@ -301,7 +304,7 @@ int ReadUserInfo(int num_blk, int num_length, char *user_info)
 	int result = sendCommand(Read_UserInfo,DATA,2,(unsigned char*)user_info,&Statue);
 	if (result != 0)
 		return result;
-	return Statue;	
+	return Statue;
 }
 
 int GetVersionNum(char *VersionNum)

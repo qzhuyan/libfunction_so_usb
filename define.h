@@ -57,5 +57,5 @@
 #define	STX		0xAA
 #define ETX		0xBB
 
-#define PID		0xffff
-#define VID		0x0035
+#define VID		0xffff
+#define PID		0x0035

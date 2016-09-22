@@ -7,7 +7,7 @@ testSource=$(testName).c
 testTarge=$(testName)
 
 ifeq ($(CC), )
-	CC = gcc	
+	CC = gcc
 endif
 
 $(testTarge):$(testSource) $(TargeName)
