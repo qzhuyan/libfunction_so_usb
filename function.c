@@ -133,7 +133,7 @@ int writeCom(unsigned char *data, int length)
 	int receive;
 	data[6] = length;
 
-
+  printf("req_type: %x and req: %x", LIBUSB_RECIPIENT_INTERFACE|LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_ENDPOINT_IN, LIBUSB_REQUEST_SET_CONFIGURATION);
 	receive = libusb_control_transfer(devs,
 	                                  LIBUSB_RECIPIENT_INTERFACE|LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_ENDPOINT_OUT,
 	                                  LIBUSB_REQUEST_SET_CONFIGURATION,
@@ -167,6 +167,7 @@ int readCom(unsigned char *data, int length)
 {
 	int receive;
 
+  printf("req_type: %x and req: %x", LIBUSB_RECIPIENT_INTERFACE|LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_ENDPOINT_OUT, LIBUSB_REQUEST_CLEAR_FEATURE);
 	receive = libusb_control_transfer(devs,
 	                                  LIBUSB_RECIPIENT_INTERFACE|LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_ENDPOINT_IN,
 	                                  LIBUSB_REQUEST_CLEAR_FEATURE,
