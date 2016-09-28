@@ -11,10 +11,10 @@ ifeq ($(CC), )
 endif
 
 $(testTarge):$(testSource) $(TargeName)
-	$(CC) $(testSource) -fPIC -o $(testTarge) ./libfunction.so
+	$(CC) -g $(testSource) -fPIC -o $(testTarge) ./libfunction.so
 
 $(TargeName):$(SourceName) $(libusbA)
-	$(CC) $(SourceName) `pkg-config --cflags --libs libusb-1.0` -fPIC -shared -o $(TargeName) -lpthread -lrt
+	$(CC) -g $(SourceName) `pkg-config --cflags --libs libusb-1.0` -fPIC -shared -o $(TargeName) -lpthread -lrt
 
 clean:
 	rm -f $(TargeName)

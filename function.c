@@ -140,7 +140,6 @@ int writeCom(unsigned char *data, int length)
 	                                  0x301,
 	                                  0,
 	                                  data,
-	                                  //length+8,
                                     256,
 	                                  500);
 
@@ -155,7 +154,7 @@ int writeCom(unsigned char *data, int length)
 		fprintf (stderr, "writeCom: no device\n");
 	}
 
-	if(receive<0 || receive!=(length + 8))
+	if(receive < 0 || receive != 256)
 	{
 		closeCom();
 		return -1;
@@ -199,7 +198,7 @@ int readCom(unsigned char *data, int length)
 
 int sendData(void)
 {
-	int length;
+	int length = 0;
 	int i;
 
 	printf ("Send data:");
@@ -214,11 +213,10 @@ int sendData(void)
 	length = writeCom(Data, p);
 	fprintf(stderr, "length send: %02x\n", length);
 
-	if(length != p)
-		return 0x05;
+	if(length < 0 )
+		return -2;
 
 	length=readCom(Data,248);
-
 
 	fprintf(stderr, "length read: %02x\n", length);
 	/*
@@ -233,10 +231,10 @@ int sendData(void)
 	fprintf(stderr, "\n");
 
 	if(p<6 || (Buffer[0]!=0x02 && Buffer[0]!=STX) || (Buffer[p-1]!=0x03 && Buffer[p-1]!=ETX) || Buffer[2]+5!=p)
-		return 0x05;
+		return -4;
 	if (checkData(Buffer,1,p-3) != Buffer[p-2])
-		return 0x02;
-	return 0;
+		return -3;
+	return length;
 }
 
 int sendCommand(int command,  unsigned char *sDATA, int sDLen,unsigned char *rDATA, int*Statue)
@@ -257,7 +255,7 @@ int sendCommand(int command,  unsigned char *sDATA, int sDLen,unsigned char *rDA
 
 	result = sendData();
 
-	if(result != 0)
+	if(result < 0)
 		return result;
 	copyData(Buffer,4,rDATA,0,Buffer[2]-1);
 	*Statue = Buffer[3];
@@ -480,10 +478,10 @@ int GET_SNR(unsigned char mode, unsigned char API_halt, unsigned char *snr, unsi
 	DATA[0] = mode;
 	DATA[1] = API_halt;
 	int result = sendCommand(MF_GET_SNR,DATA,2,DATA,&Statue);
-	if (result != 0)
+	if (result < 0)
 		return result;
 	snr[0] = DATA[0];
-	copyData(DATA,1,value,0,4);
+	copyData(DATA,1, value,0, 4);
 	return Statue;
 }
 
